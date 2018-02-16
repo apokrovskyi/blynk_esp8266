@@ -22,16 +22,16 @@ BlynkTimer timer;
 
 #define BLYNK_INFO_DEVICE "ESP8266"
 
-#include "BlynkSimpleUserDefined.h"
-
-size_t BlynkStreamRead(void* buf, size_t len) {}
-
-size_t BlynkStreamWrite(const void* buf, size_t len) {}
+#include "BlynkSimpleESP8266_core.h"
 
 void loop(void* arg)
 {
     Blynk.run();
 }
+
+char ssid[] = "$oundpre$$";
+char pass[] = "coherent";
+char auth[] = "kajsbvoiahoivlaleklfijwbae";
 
 void app_init()
 {
@@ -41,10 +41,10 @@ void app_init()
     BLYNK_LOG("SDK: %s", system_get_sdk_version());
     BLYNK_LOG("Chip ID: %08X", system_get_chip_id());
 
-	
+	wifi_set_event_handler_cb(event_handler);
 
-    Blynk.begin("hello");
-
-    //timer.setInterval(10, loop);
+    Blynk.begin(auth, ssid, pass);
 }
+
+
 
