@@ -26,8 +26,6 @@ extern"C"{
 #include "espconn.h"
 }
 
-void host_ip_callback(const char *name, ip_addr_t *ipAddr, void *arg);
-
 class Client{
 
     public:
@@ -47,14 +45,7 @@ class Client{
             espconn_connect(&_conn);
         }
         
-        int connect(const char *host, uint16_t port){   Serial.println("connect host");
-            if(_ipAddr){
-                connect(_ipAddr, port);
-            }
-            else{
-                espconn_gethostbyname((struct espconn*)(void*)this, host, (ip_addr_t*)_ipAddr.raw_address(), (dns_found_callback)host_ip_callback);
-            }
-        }
+        int connect(const char *host, uint16_t port);
         
         void setTimeout(unsigned long timeout){ Serial.println("set timeout");}
         
@@ -103,9 +94,18 @@ class Client{
         esp_tcp _tcp;
 };
 
-void host_ip_callback(const char *name, ip_addr_t *ipAddr, void *arg)
+void ICAHCE_FLASH_ATTR host_ip_callback(const char *name, ip_addr_t *ipAddr, void *arg)
 {
      ((Client*)arg)->_ipAddr = ipAddr->addr;
+}
+
+int Client::connect(const char *host, uint16_t port){   Serial.println("connect host");
+    if(_ipAddr){
+        connect(_ipAddr, port);
+    }
+    else{
+        espconn_gethostbyname((struct espconn*)(void*)this, host, (ip_addr_t*)_ipAddr.raw_address(), (dns_found_callback)host_ip_callback);
+    }
 }
 
 #endif
