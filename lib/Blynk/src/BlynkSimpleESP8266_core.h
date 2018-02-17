@@ -15,6 +15,38 @@
 #error This code is intended to run on the ESP8266 platform! Please check your Tools->Board setting.
 #endif
 
+#define HIGH 1
+#define LOW 0
+
+typedef enum{
+	INPUT,
+	OUTPUT
+}pinmode;
+
+void digitalWrite(int pin, int value){
+	GPIO_OUTPUT_SET(pin, (value==1));
+}
+
+void analogWrite(int pin, int value);
+
+int digitalRead(int pin){
+	return GPIO_INPUT_GET(pin);
+}
+
+int analogRead(int pin){
+	return system_adc_read();
+}
+
+void pinMode(int pin, pinmode mode){
+	if(mode==INPUT){
+		gpio_output_set(0, 0, 0, 1<<pin);
+	}
+	else
+	{
+		gpio_output_set(0, 0, 1<<pin, 0);
+	}
+}
+
 #include <BlynkApiArduino.h>
 #include <Blynk/BlynkProtocol.h>
 #include <Adapters/BlynkArduinoClient.h>
@@ -78,7 +110,6 @@ public:
     {
         connectWiFi(ssid, pass);
         config(auth, domain, port);
-        while(this->connect() != true) {}
     }
 
     void begin(const char* auth,
@@ -89,13 +120,12 @@ public:
     {
         connectWiFi(ssid, pass);
         config(auth, ip, port);
-        while(this->connect() != true) {}
     }
 
 };
 
-static WiFiClient _blynkWifiClient;
-static BlynkArduinoClient _blynkTransport(_blynkWifiClient);
+static Client _blynkESPClient;
+static BlynkArduinoClient _blynkTransport(_blynkESPClient);
 BlynkWifi Blynk(_blynkTransport);
 
 #include <BlynkWidgets.h>

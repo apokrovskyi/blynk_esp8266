@@ -29,9 +29,9 @@ void loop(void* arg)
     Blynk.run();
 }
 
-char ssid[] = "$oundpre$$";
-char pass[] = "coherent";
-char auth[] = "kajsbvoiahoivlaleklfijwbae";
+char ssid[] = "ssid";
+char pass[] = "pass";
+char auth[] = "token";
 
 void app_init()
 {
@@ -41,9 +41,9 @@ void app_init()
     BLYNK_LOG("SDK: %s", system_get_sdk_version());
     BLYNK_LOG("Chip ID: %08X", system_get_chip_id());
 
-	wifi_set_event_handler_cb(event_handler);
-
     Blynk.begin(auth, ssid, pass);
+    
+    timer.setInterval(100, loop);
 }
 
 

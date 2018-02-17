@@ -48,7 +48,7 @@ public:
 	{
 		struct ip_info result;
 		wifi_get_ip_info(STATION_IF, &result);
-		return result.ip;
+		return result.ip.addr;
 	}
 };
 

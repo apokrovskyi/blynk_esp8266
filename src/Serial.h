@@ -33,7 +33,7 @@ public:
   }
 
   void print(unsigned char arg) {
-      os_printf("%c", arg);
+      os_printf("%d", arg);
   }
 
   void print(char arg) {
