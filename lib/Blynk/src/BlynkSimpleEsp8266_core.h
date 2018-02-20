@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef BlynkSimpleEsp8266_h
-#define BlynkSimpleEsp8266_h
+#ifndef BlynkSimpleEsp8266_core_h
+#define BlynkSimpleEsp8266_core_h
 
 #ifndef ESP8266
 #error This code is intended to run on the ESP8266 platform! Please check your Tools->Board setting.
@@ -27,7 +27,9 @@ void digitalWrite(int pin, int value){
 	GPIO_OUTPUT_SET(pin, (value==1));
 }
 
-void analogWrite(int pin, int value);
+void analogWrite(int pin, int value){
+
+}
 
 int digitalRead(int pin){
 	return GPIO_INPUT_GET(pin);
@@ -47,6 +49,7 @@ void pinMode(int pin, pinmode mode){
 	}
 }
 
+#include <Buffer.h>
 #include <BlynkApiArduino.h>
 #include <Blynk/BlynkProtocol.h>
 #include <Adapters/BlynkArduinoClient.h>

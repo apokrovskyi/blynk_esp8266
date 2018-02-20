@@ -22,7 +22,7 @@ BlynkTimer timer;
 
 #define BLYNK_INFO_DEVICE "ESP8266"
 
-#include "BlynkSimpleESP8266_core.h"
+#include "BlynkSimpleEsp8266_core.h"
 
 void loop(void* arg)
 {
@@ -33,7 +33,7 @@ char ssid[] = "ssid";
 char pass[] = "pass";
 char auth[] = "token";
 
-void app_init()
+void ICACHE_FLASH_ATTR app_init()
 {
     Serial.begin(115200);
 

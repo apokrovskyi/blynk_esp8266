@@ -19,6 +19,7 @@
 
 #ifndef client_h
 #define client_h
+#include "Buffer.h"
 #include "IPAddress.h"
 #include "user_interface.h"
 
@@ -26,75 +27,92 @@ extern"C"{
 #include "espconn.h"
 }
 
-class Client{
+static Buffer _buffer(128);
 
-    public:
-        Client()
-        :_ipAddr()
-        {
-            _conn.type = ESPCONN_TCP;
-            _conn.state = ESPCONN_NONE;
-            _conn.proto.tcp = &_tcp;
-        }
+void ICACHE_FLASH_ATTR blynk_recv_cb(void* arg, char* data, unsigned short len)
+{
+    Serial.println("Receiving:");
+    _buffer.write(data, len);
+}
+
+class Client{
+public:
+    Client()
+    :_ipAddr()
+    {
+        _conn.type = ESPCONN_TCP;
+        _conn.state = ESPCONN_NONE;
+        _conn.proto.tcp = &_tcp;
+    }
+
+    int connect(IPAddress ip, uint16_t port){   Serial.println("connect ip");
+        BLYNK_LOG_IP("IP: ", ip);
+        
+        _tcp.remote_port = port;
+        memcpy(_tcp.remote_ip, ip.raw_address(), 4);
+        espconn_connect(&_conn);
+    }
     
-        int connect(IPAddress ip, uint16_t port){   Serial.println("connect ip");
-            BLYNK_LOG_IP("IP: ", ip);
-            
-            _tcp.remote_port = port;
-            memcpy(_tcp.remote_ip, ip.raw_address(), 4);
-            espconn_connect(&_conn);
-        }
-        
-        int connect(const char *host, uint16_t port);
-        
-        void setTimeout(unsigned long timeout){ Serial.println("set timeout");}
-        
-        size_t write(uint8_t){  Serial.println("write");}
-        
-        size_t write(const uint8_t *buf, size_t size){Serial.println("writes");}
-        
-        int available(){Serial.println("available");}
-        
-        int read(){Serial.println("read");}
-        
-        int read(uint8_t *buf, size_t size){Serial.println("reads");}
-        
-        int peek(){Serial.println("peek");}
-        
-        void flush(){Serial.println("flush");}
-        
-        void stop(){Serial.println("stop");
-            
-            if(connected()){
-                _ipAddr = (uint32_t)0;
-            
-                espconn_disconnect(&_conn);
-            }
-        }
-        
-        uint8_t connected(){    Serial.println("connected");
-            return _conn.state != ESPCONN_CLOSE && _conn.state != ESPCONN_NONE; 
-        }
-        
-        operator bool(){Serial.println("booled");}
-        
-        size_t readBytes( char *buffer, size_t length){Serial.println("readBytes");}
-        
-        size_t readBytes( uint8_t *buffer, size_t length) { return readBytes((char *)buffer, length); }
-    protected:
-        uint8_t* rawIPAddress(IPAddress& addr) {
-            return addr.raw_address();
-        }
-        ;
-    private:
-        friend void host_ip_callback(const char *name, ip_addr_t *ipAddr, void *arg);
+    int connect(const char *host, uint16_t port);
     
-        IPAddress _ipAddr;
-        struct espconn _conn;
-        esp_tcp _tcp;
+    void setTimeout(unsigned long timeout){ Serial.println("set timeout");}
+    
+    size_t write(uint8_t){  Serial.println("write");}
+    
+    size_t write(const uint8_t *buf, size_t size){Serial.println("writes");
+        espconn_send(&_conn, (uint8*)buf, size);
+        return size;
+    }
+    
+    int available(){Serial.println("available");
+        return _buffer.available();
+    }
+    
+    int read(){Serial.println("read");}
+    
+    int read(uint8_t *buf, size_t size){Serial.println("reads");
+        return _buffer.read(buf, size);
+    }
+    
+    int peek(){Serial.println("peek");}
+    
+    void flush(){Serial.println("flush");}
+    
+    void stop(){Serial.println("stop");
+        if(connected()){
+            _ipAddr = (uint32_t)0;
+            espconn_disconnect(&_conn);
+        }
+    }
+    
+    uint8_t connected(){    Serial.println("connected");
+        return _conn.state != ESPCONN_CLOSE && _conn.state != ESPCONN_NONE; 
+    }
+    
+    operator bool(){Serial.println("booled");}
+    
+    size_t readBytes( char *buffer, size_t length){
+        return readBytes((uint8_t *)buffer, length); 
+    }
+    
+    size_t readBytes( uint8_t *buffer, size_t length) {
+        Serial.println("readBytes");
+        return read(buffer, length); // Simplifying readBytes() behaviour, fix later;
+    }
+protected:
+    uint8_t* rawIPAddress(IPAddress& addr) {
+        return addr.raw_address();
+    }
+    ;
+private:
+    friend void host_ip_callback(const char *name, ip_addr_t *ipAddr, void *arg);
+
+    IPAddress _ipAddr;
+    struct espconn _conn;
+    esp_tcp _tcp;
 };
 
-void ICAHCE_FLASH_ATTR host_ip_callback(const char *name, ip_addr_t *ipAddr, void *arg)
+void ICACHE_FLASH_ATTR host_ip_callback(const char *name, ip_addr_t *ipAddr, void *arg)
 {
      ((Client*)arg)->_ipAddr = ipAddr->addr;
 }
